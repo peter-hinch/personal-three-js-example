@@ -21,7 +21,7 @@ function main(){
   const near = 0.1;
   const far = 1000;
   const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-  camera.position.z = 1;
+  camera.position.set(0.5, 0.25, 0.5);
   
   // Instantiate a scene.
   const scene = new THREE.Scene();
