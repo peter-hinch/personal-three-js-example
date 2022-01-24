@@ -1,3 +1,5 @@
+'use strict';
+
 import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
 import {OrbitControls} from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js';
 import {GLTFLoader} from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js';
@@ -5,50 +7,85 @@ import {GLTFLoader} from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/loa
 // Getting started / creating a scene using three.js
 // Reference: https://threejs.org/docs/index.html#manual/en/introduction/Creating-a-scene
 
-// Instantiate scene and camera.
-const scene = new THREE.Scene();
+// Three.js Responsive Design
+// Reference: https://r105.threejsfundamentals.org/threejs/lessons/threejs-responsive.html
 
-// Add a couple of spotlights to illuminate the model.
-const spotLight1 = new THREE.SpotLight();
-spotLight1.position.set(5, 5, 5);
-scene.add(spotLight1);
+function main(){
+  // Declare the canvas element and instantiate the renderer.
+  const canvas = document.querySelector('#c');
+  const renderer = new THREE.WebGLRenderer( {canvas} );
+  
+  // Instantiate a camera to view the model.
+  const fov = 75;
+  const aspect = window.innerWidth / window.innerHeight;
+  const near = 0.1;
+  const far = 1000;
+  const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+  camera.position.z = 1;
+  
+  // Instantiate a scene.
+  const scene = new THREE.Scene();
 
-const spotLight2 = new THREE.SpotLight();
-spotLight2.position.set(-5, 5, -5);
-scene.add(spotLight2);
+  // Add a couple of spotlights to illuminate the model.
+  const spotLight1 = new THREE.SpotLight();
+  spotLight1.position.set(5, 5, 5);
+  scene.add(spotLight1);
 
-// Create a camera from which to view the model.
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 0.5;
+  const spotLight2 = new THREE.SpotLight();
+  spotLight2.position.set(-5, 5, -5);
+  scene.add(spotLight2);
 
+  // Loading 3D models - gLTF from Blender.
+  // Reference: https://threejs.org/docs/index.html#manual/en/introduction/Loading-3D-models
+  // Reference: https://sbcode.net/threejs/loaders-gltf/
 
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+  // Define controls to manipulate the camera.
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(0,0,0);
+  controls.update();
+  controls.enablePan = false;
 
-// Loading 3D models - gLTF from Blender.
-// Reference: https://threejs.org/docs/index.html#manual/en/introduction/Loading-3D-models
-// Reference: https://sbcode.net/threejs/loaders-gltf/
+  // Load and animate the model.
+  const loader = new GLTFLoader();
+  loader.load('./models/gltf/volkswagen-type3.glb', function(gltf) {
+    const car = gltf.scene;
+    console.log(car);
+    //car.children[24].visible = false; // hide the roof 
+    car.scale.set(0.15, 0.15, 0.15);
+    scene.add(car);
+    render();
+  }, undefined, function(error) {
+    console.error(error);
+  });
 
-// Define controls to manipulate the camera.
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0,0,0);
-controls.update();
-controls.enablePan = false;
-// controls.enableDamping = true;
+  function resizeRendererToDisplaySize(renderer) {
+    const canvas = renderer.domElement;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    const needResize = canvas.width !== width || canvas.height !== height;
 
-// Load and animate the model.
-const loader = new GLTFLoader();
-loader.load('./models/gltf/volkswagen-type3.glb', function(gltf) {
-  const car = gltf.scene;
-  car.scale.set(0.15, 0.15, 0.15);
-  scene.add(car);
-  animate();
-}, undefined, function(error) {
-  console.error(error);
-});
+    if (needResize) {
+      renderer.setSize(width, height, false);
+    }
 
-function animate() {
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
+    return needResize;
+  }
+
+  function render(time) {
+    time *= 0.001;
+
+    if( resizeRendererToDisplaySize(renderer) ) {
+      const canvas = renderer.domElement;
+      camera.aspect = canvas.clientWidth / canvas.clientHeight;
+      camera.updateProjectionMatrix();
+    }
+    
+    renderer.render(scene, camera);
+
+    requestAnimationFrame(render);
+  }
+
+  requestAnimationFrame(render);
 }
+
+main();
