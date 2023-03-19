@@ -52,7 +52,8 @@ function main() {
     function (gltf) {
       const car = gltf.scene;
       console.log(car);
-      //car.children[24].visible = false; // hide the roof
+      car.children[17].visible = false; // hide alternative rear windows
+      car.children[18].visible = false; // hide alternative roof
       car.scale.set(0.15, 0.15, 0.15);
       scene.add(car);
       render();
